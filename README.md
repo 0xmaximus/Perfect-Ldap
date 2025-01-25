@@ -19,9 +19,19 @@ Write-Output "Machine Account Quota: $quota"
 ```powershell
 $(Get-ItemProperty -Path "HKLM:\Software\Policies\Microsoft\Windows NT\DNSClient" -name EnableMulticast).EnableMulticast
 ```
-We can confirm that we have mitigated LLMNR by running the following command in PowerShell and receiving a ‘0’ in return:
-
-### Method 2. Using gpresult to Check Applied Policies:
+We can confirm that we have disabled LLMNR by running the above command in PowerShell and receiving a ‘0’ in return.
+### Method 2. Alternative Method
+```powershell
+$llmnrStatus = Get-ItemProperty -Path "HKLM:\Software\Policies\Microsoft\Windows NT\DNSClient" -Name "EnableMulticast" -ErrorAction SilentlyContinue
+if ($llmnrStatus -eq $null) {
+    Write-Output "LLMNR policy not configured (enabled by default)."
+} elseif ($llmnrStatus.EnableMulticast -eq 0) {
+    Write-Output "LLMNR is disabled via Group Policy."
+} else {
+    Write-Output "LLMNR is enabled."
+}
+```
+### Method 3. Using gpresult to Check Applied Policies:
 ```cmd
 gpresult /h C:\temp\gpo_report.html
 ```
