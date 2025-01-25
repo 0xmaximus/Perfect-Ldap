@@ -53,8 +53,11 @@ if ($llmnrStatus -eq $null) {
     Write-Output "LLMNR is enabled."
 }
 ```
-
-### Method 3. Using gpresult to Check Applied Policies:
+### Method 3. Check from registry :
+```powershell
+$(Get-ItemProperty -Path "HKLM:\Software\Policies\Microsoft\Windows NT\DNSClient" -name EnableMulticast).EnableMulticast
+```
+### Method 4. Using gpresult to Check Applied Policies:
 ```cmd
 gpresult /h C:\temp\gpo_report.html
 ```
