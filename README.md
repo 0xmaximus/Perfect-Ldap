@@ -57,6 +57,8 @@ if ($llmnrStatus -eq $null) {
 ```powershell
 $(Get-ItemProperty -Path "HKLM:\Software\Policies\Microsoft\Windows NT\DNSClient" -name EnableMulticast).EnableMulticast
 ```
+We can confirm that we have mitigated LLMNR by running the following command in PowerShell and receiving a ‘0’ in return:
+
 ### Method 4. Using gpresult to Check Applied Policies:
 ```cmd
 gpresult /h C:\temp\gpo_report.html
