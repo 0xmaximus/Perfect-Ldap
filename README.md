@@ -85,3 +85,7 @@ if ($result.Count -gt 0) {
 ```powershell
 Get-NetIPsecRule -PolicyStore ActiveStore | Format-Table -Property DisplayName, Enabled, Action, Profile
 ```
+### Method 2. Using netsh
+```powershell
+netsh advfirewall consec show rule name=all
+```
