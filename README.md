@@ -15,51 +15,13 @@ Write-Output "Machine Account Quota: $quota"
 ```
 
 ## Check if LLMNR (Link-Local Multicast Name Resolution) is disabled or not
-### Method 1. Using LDAP:
-```powershell
-$domain = [System.DirectoryServices.ActiveDirectory.Domain]::GetCurrentDomain().Name
-$ldapPath = "LDAP://CN=Policies,CN=System,DC=$($domain -replace '\.', ',DC=')"
-$searcher = New-Object DirectoryServices.DirectorySearcher
-$searcher.SearchRoot = [ADSI]$ldapPath
-$searcher.Filter = "(cn=*)"
-$searcher.PropertiesToLoad.Add("gPCUserExtensionNames") | Out-Null
-$searcher.PropertiesToLoad.Add("gPCMachineExtensionNames") | Out-Null
-$result = $searcher.FindAll()
-
-# Flag to track if the LLMNR policy is found
-$llmnrPolicyFound = $false
-
-foreach ($policy in $result) {
-    if ($policy.Properties["gPCUserExtensionNames"] -match "EnableMulticast" -or $policy.Properties["gPCMachineExtensionNames"] -match "EnableMulticast") {
-        Write-Output "LLMNR policy is configured in Group Policy."
-        $llmnrPolicyFound = $true
-    }
-}
-
-# If the LLMNR policy was not found, output a message
-if (-not $llmnrPolicyFound) {
-    Write-Output "LLMNR policy is not configured in Group Policy."
-}
-```
-### Method 2. Check LLMNR Status via Local Group Policy:
-```powershell
-$llmnrStatus = Get-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\DNSClient" -Name "EnableMulticast" -ErrorAction SilentlyContinue
-
-if ($llmnrStatus -eq $null) {
-    Write-Output "LLMNR policy not configured (enabled by default)."
-} elseif ($llmnrStatus.EnableMulticast -eq 0) {
-    Write-Output "LLMNR is disabled via Group Policy."
-} else {
-    Write-Output "LLMNR is enabled."
-}
-```
-### Method 3. Check from registry :
+### Method 1. Check LLMNR Status via Local Group Policy:
 ```powershell
 $(Get-ItemProperty -Path "HKLM:\Software\Policies\Microsoft\Windows NT\DNSClient" -name EnableMulticast).EnableMulticast
 ```
 We can confirm that we have mitigated LLMNR by running the following command in PowerShell and receiving a ‘0’ in return:
 
-### Method 4. Using gpresult to Check Applied Policies:
+### Method 2. Using gpresult to Check Applied Policies:
 ```cmd
 gpresult /h C:\temp\gpo_report.html
 ```
