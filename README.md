@@ -80,3 +80,8 @@ if ($result.Count -gt 0) {
     Write-Output "No CA certificates found in AD."
 }
 ```
+## connection security rules are configured or not
+### Method 1. Using PowerShell
+```powershell
+Get-NetIPsecRule -PolicyStore ActiveStore | Format-Table -Property DisplayName, Enabled, Action, Profile
+```
