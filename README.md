@@ -60,3 +60,46 @@ gpresult /h C:\temp\gpo_report.html
 ```
 Open the generated gpo_report.html and search for "EnableMulticast" under "Applied GPOs."
 If found and set to 0, LLMNR is disabled.
+
+## Check Certificate Authority (CA) server is installed or not
+### Method 1. Using LDAP:
+```powershell
+$domain = [System.DirectoryServices.ActiveDirectory.Domain]::GetCurrentDomain().Name
+$configDN = ([ADSI]"LDAP://RootDSE").configurationNamingContext
+$ldapPath = "LDAP://CN=Certification Authorities,CN=Public Key Services,CN=Services,$configDN"
+
+$searcher = New-Object DirectoryServices.DirectorySearcher
+$searcher.SearchRoot = [ADSI]$ldapPath
+$searcher.Filter = "(objectClass=pKIEnrollmentService)"
+$searcher.PropertiesToLoad.Add("cn") | Out-Null
+
+$result = $searcher.FindAll()
+
+if ($result.Count -gt 0) {
+    Write-Output "Certificate Authority (CA) server is installed in the domain."
+    foreach ($ca in $result) {
+        Write-Output "CA Name: $($ca.Properties['cn'])"
+    }
+} else {
+    Write-Output "No Certificate Authority (CA) server found in the domain."
+}
+```
+### Method 2. Using certutil:
+```
+certutil -config - -ping
+```
+### Method 3. Search for published certificates in Active Directory:
+```powershell
+$ldapPath = "LDAP://CN=AIA,CN=Public Key Services,CN=Services,$configDN"
+$searcher = New-Object DirectoryServices.DirectorySearcher
+$searcher.SearchRoot = [ADSI]$ldapPath
+$searcher.Filter = "(objectClass=certificationAuthority)"
+$searcher.PropertiesToLoad.Add("cn") | Out-Null
+
+$result = $searcher.FindAll()
+if ($result.Count -gt 0) {
+    Write-Output "A CA certificate is published in Active Directory."
+} else {
+    Write-Output "No CA certificates found in AD."
+}
+```
