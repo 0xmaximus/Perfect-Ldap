@@ -18,6 +18,7 @@ Get-DomainGroup -MemberIdentity username | select samaccountname
 ```powershell
 Get-DomainGroup
 Get-DomainGroupMember -Identity "Domain Admins"
+Get-DomainGroupMember -Identity "Domain Admins" | select MemberName
 Get-DomainGroupMember -Identity "Enterprise Admins"
 Get-DomainGroupMember -Identity "Enterprise Admins" -Recurse
 Get-DomainGroupMember -Identity "Enterprise Admins" -Server lab.local # if there is a child DC and we are in that.
@@ -29,11 +30,17 @@ Get-DomainOU
 Get-DomainOU | ? { $_.ou -like "*laps*" } # Enumerate OU's that have "LAPS" in the name
 ```
 
-5- Enumerate domain GPOs that have "LAPS" in the name:
+5- Return all Group Policy Objects:
 ```powershell
-Get-DomainGPO | ? { $_.DisplayName -like "*laps*" } | select DisplayName, Name, GPCFileSysPath | fl
+Get-DomainGPO -Properties DisplayName | sort -Property DisplayName
 
-Get-DomainGPO | ? { $_.DisplayName -like "*password solution*" } | select DisplayName, Name, GPCFileSysPath | fl
+Get-DomainGPO | ? { $_.DisplayName -like "*laps*" } | select DisplayName, Name, GPCFileSysPath | fl # Enumerate domain GPOs that have "LAPS" in the name
+
+Get-DomainGPO | ? { $_.DisplayName -like "*password solution*" } | select DisplayName, Name, GPCFileSysPath | fl # Enumerate domain GPOs that have "LAPS" in the name
+```
+5.1- Enumerate all GPOs that are applied to a particular machine
+```powershell
+Get-DomainGPO -ComputerIdentity pc1 -Properties DisplayName | sort -Property DisplayName
 ```
 
 6- Enumerate Computers in OU
@@ -89,8 +96,8 @@ Get-DomainUser -UACFilter NOT_ACCOUNTDISABLE -Properties distinguishedname
 
 13- all disabled users
 ```powershell
-Get-DomainUser -LDAPFilter "(userAccountControl:1.2.840.113556.1.4.803:=2)"
-Get-DomainUser -UACFilter ACCOUNTDISABLE
+Get-DomainUser -LDAPFilter "(userAccountControl:1.2.840.113556.1.4.803:=2)" | select name
+Get-DomainUser -UACFilter ACCOUNTDISABLE | select name
 ```
 
 14- find all users with an SPN set (likely service accounts)
@@ -110,7 +117,7 @@ Get-NetLocalGroup SERVER.domain.local
 
 17- Finds domain machines where specific users are logged into.
 
-18- Finds domain admin machines
+18- Finds domain machines where those users are logged in (default domain admin)
 ```powershell
 Find-DomainUserLocation
 Find-DomainUserLocation -ComputerName DESKTOP-S95DUHA
@@ -136,16 +143,21 @@ Get-DomainComputer LAPSCLIENT.test.local |
 	} | Where-Object { 
 		($_.ObjectAceType -like 'ms-Mcs-AdmPwd') -and 
 		($_.ActiveDirectoryRights -match 'ReadProperty')
-	} | Select-Object -ExpandProperty SecurityIdentifier | Get-DomainObject
+	} | Select-Object -ExpandProperty SecurityIdentifier | Get-DomainObject | select samaccountname
 ```
 22- Enumerate Principals that can read the 'ms-Mcs-AdmPwd'
 ```powershell
-Get-DomainOU | Get-DomainObjectAcl -ResolveGUIDs | Where-Object {($_.ObjectAceType -like 'ms-Mcs-AdmPwd') -and ($_.ActiveDirectoryRights -match 'ReadProperty')} | ForEach-Object { $_ | Add-Member NoteProperty 'IdentityName' $(Convert-SidToName $_.SecurityIdentifier); $_ }
+Get-DomainOU | Get-DomainObjectAcl -ResolveGUIDs | Where-Object {($_.ObjectAceType -like 'ms-Mcs-AdmPwd') -and ($_.ActiveDirectoryRights -match 'ReadProperty')} | ForEach-Object { $_ | Add-Member NoteProperty 'IdentityName' $(Convert-SidToName $_.SecurityIdentifier); $_ } | select IdentityName
 ```
 
 23- Read instances of ms-mcs-admpwd where it is not empty
 ```powershell
-Get-DomainComputer  | Select-Object 'dnshostname','ms-mcs-admpwd' | Where-Object {$_."ms-mcs-admpwd" -ne $null}
+Get-DomainComputer | Select-Object 'dnshostname','ms-mcs-admpwd' | Where-Object {$_."ms-mcs-admpwd" -ne $null}
 
 ([adsisearcher]"(&(objectCategory=computer)(ms-MCS-AdmPwd=*)(sAMAccountName=*))").findAll() | ForEach-Object { Write-Host "" ; $_.properties.cn ; $_.properties.'ms-mcs-admpwd'}   # native method
+```
+
+24- Retrieves Group Policy Objects (GPOs) that add users or groups to the local Administrators group on domain-joined computers.
+```powershell
+Get-DomainGPOUserLocalGroupMapping -LocalGroup Administrators | select ObjectName, GPODisplayName, ContainerName, ComputerName
 ```
