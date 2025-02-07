@@ -31,3 +31,12 @@ Get-DomainComputer -SearchBase $ouDN | Select-Object Name, OperatingSystem, IPv4
 Get-DomainComputer | Select-Object dnshostname
 Get-NetLocalGroupMember -Computer DESKTOP-S95DUHA -GroupName Administrators
 ```
+
+
+7- Enumerate ACLs in domain
+```powershell
+Get-DomainObjectACl # find all ACLs
+Find-InterestingDomainAcl # find interesting ACLs and convert SID to distinguished name automatic
+Get-DomainObjectACl -identity "Domain Admins" # find ACLs for "Domain Admins" object
+Convert-SidToName -SID S-1-5-21-154859305-3651822756-1843101964-512 # Convert SID to name
+```
