@@ -162,3 +162,9 @@ Get-DomainComputer | Select-Object 'dnshostname','ms-mcs-admpwd' | Where-Object 
 ```powershell
 Get-DomainGPOUserLocalGroupMapping -LocalGroup Administrators | select ObjectName, GPODisplayName, ContainerName, ComputerName
 ```
+
+25- Identify the LAPS Account Username
+```powershell
+Get-DomainGPO -ComputerIdentity pc1 -Properties DisplayName | sort -Property DisplayName
+
+```
