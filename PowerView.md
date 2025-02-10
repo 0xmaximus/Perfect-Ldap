@@ -6,7 +6,7 @@ Get-DomainComputer
 2- Enumerate a user property like logoncount, badpasswordtime and ...
 ```powershell
 Get-DomainUser -Identity username
-```powershell
+```
 
 3- Find Groups for a Specific User
 ```powershell  
@@ -132,6 +132,7 @@ Find-DomainShare -CheckShareAccess
 20- Finds all LAPS-enabled machines
 ```powershell
 Get-DomainComputer -LDAPFilter '(ms-Mcs-AdmPwdExpirationtime=*)'
+Get-DomainComputer -LDAPFilter '(ms-Mcs-AdmPwdExpirationtime=*)' | select cn
 ```
 
 21- Enumerates all users/groups who can view LAPS password on specified LAPSCLIENT.test.local machine
@@ -145,7 +146,7 @@ Get-DomainComputer LAPSCLIENT.test.local |
 		($_.ActiveDirectoryRights -match 'ReadProperty')
 	} | Select-Object -ExpandProperty SecurityIdentifier | Get-DomainObject | select samaccountname
 ```
-22- Enumerate Principals that can read the 'ms-Mcs-AdmPwd'
+22- Enumerate Principals that can read the 'ms-Mcs-AdmPwd' (Same as 21)
 ```powershell
 Get-DomainOU | Get-DomainObjectAcl -ResolveGUIDs | Where-Object {($_.ObjectAceType -like 'ms-Mcs-AdmPwd') -and ($_.ActiveDirectoryRights -match 'ReadProperty')} | ForEach-Object { $_ | Add-Member NoteProperty 'IdentityName' $(Convert-SidToName $_.SecurityIdentifier); $_ } | select IdentityName
 ```
