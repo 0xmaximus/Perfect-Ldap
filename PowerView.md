@@ -103,6 +103,8 @@ Get-DomainUser -UACFilter ACCOUNTDISABLE | select name
 14- find all users with an SPN set (likely service accounts)
 ```powershell
 Get-DomainUser -SPN
+Get-DomainUser -SPN | select samaccountname,serviceprincipalname
+Get-DomainComputer | select samaccountname,serviceprincipalname
 ```
 
 15- find all service accounts in "Domain Admins"
