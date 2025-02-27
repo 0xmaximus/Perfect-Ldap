@@ -89,8 +89,3 @@ Get-NetIPsecRule -PolicyStore ActiveStore | Format-Table -Property DisplayName, 
 ```powershell
 netsh advfirewall consec show rule name=all
 ```
-
-wget http://launchpadlibrarian.net/715850281/python3-openssl_24.0.0-1_all.deb
-sudo dpkg -i python3-openssl_24.0.0-1_all.deb
-
-```
