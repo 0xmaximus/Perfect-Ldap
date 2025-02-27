@@ -1,3 +1,24 @@
+### Active Directory Enumeration from Non-Joined Domain Workstation
+- Add Domain DNS server for Non-Joined Workstation setting.
+- Run Following commands:
+```cmd
+runas /netonly /user:lab.local\user 'powershell -ep bypass'
+
+Import-Module PowerView.ps1
+
+Get-NetDomain
+```
+
+### Enumerate current user's domain
+```powershell
+Get-NetDomain
+```
+
+### Enumerate DC computers
+```powershell
+Get-DomainController
+```
+
 ### Enumerate computers
 ```powershell
 Get-DomainComputer
@@ -63,6 +84,34 @@ Get-DomainObjectACl # find all ACLs
 Find-InterestingDomainAcl # find interesting ACLs and convert SID to distinguished name automatic
 Get-DomainObjectACl -identity "Domain Admins" # find ACLs for "Domain Admins" object
 Convert-SidToName -SID S-1-5-21-154859305-3651822756-1843101964-512 # Convert SID to name
+```
+### Find ACLs where a user named Bob has GenericAll, GenericRead, GenericWrite, WriteOwner or WriteDacl permissions
+```powershell
+Get-DomainObjectAcl -ResolveGUIDs | ForEach-Object {
+    # Always add IdentityName (converted from SecurityIdentifier)
+    $_ | Add-Member NoteProperty 'IdentityName' $(Convert-SidToName $_.SecurityIdentifier); $_
+    
+    # Add ObjectName (converted from ObjectSID) only if ObjectSID is not null
+    if ($_.ObjectSID -ne $null) {
+        try {
+            $ObjectName = Convert-SidToName $_.ObjectSID
+        } catch {
+            $ObjectName = "Unknown"
+        }
+        $_ | Add-Member NoteProperty 'ObjectName' $ObjectName; $_
+    } else {
+        # If ObjectSID is null, set ObjectName to "N/A" or similar
+        $_ | Add-Member NoteProperty 'ObjectName' "N/A"; $_
+    }
+} | Where-Object {
+    $_.IdentityName -match 'bob' -and (
+        $_.ActiveDirectoryRights -match 'GenericAll' -or
+        $_.ActiveDirectoryRights -match 'GenericRead' -or
+        $_.ActiveDirectoryRights -match 'GenericWrite' -or
+        $_.ActiveDirectoryRights -match 'WriteOwner' -or
+        $_.ActiveDirectoryRights -match 'WriteDacl'
+    )
+} | Select-Object IdentityName, ActiveDirectoryRights, ObjectName
 ```
 
 ### Check for the specific object attribute and properties
