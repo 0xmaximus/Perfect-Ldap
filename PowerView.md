@@ -286,12 +286,10 @@ Get-DomainGPOUserLocalGroupMapping -LocalGroup Administrators | select ObjectNam
 ### Identify the LAPS Account Username
 ```powershell
 Get-DomainGPO -ComputerIdentity pc1 -Properties DisplayName | sort -Property DisplayName
-
 ```
+
 ### Identifying computers that are configured for Unconstrained Delegation
 ```powershell
-Get-DomainUser -PreauthNotRequired -Properties cn,memberof
-
 Get-ADComputer -Filter {TrustedForDelegation -eq $true -and primarygroupid -eq 515} -Properties trustedfordelegation,serviceprincipalname,description
 
 Get-ADComputer -LDAPFilter "(userAccountControl:1.2.840.113556.1.4.803:=524288)"
@@ -301,4 +299,9 @@ Get-ADComputer -LDAPFilter "(userAccountControl:1.2.840.113556.1.4.803:=524288)"
 Get-DomainUser | Where-Object { ($_."userAccountControl" -band 0x80000) -ne 0 } | select samaccountname,serviceprincipalname
 
 Get-DomainUser -ldapfilter "(userAccountControl:1.2.840.113556.1.4.803:=524288)"
+```
+
+### Find roastable accounts (AS-REP Roasting Attack)
+```powershell
+Get-DomainUser -PreauthNotRequired -Properties samaccountname,memberof
 ```
