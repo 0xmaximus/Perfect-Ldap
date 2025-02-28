@@ -85,6 +85,36 @@ Find-InterestingDomainAcl # find interesting ACLs and convert SID to distinguish
 Get-DomainObjectACl -identity "Domain Admins" # find ACLs for "Domain Admins" object
 Convert-SidToName -SID S-1-5-21-154859305-3651822756-1843101964-512 # Convert SID to name
 ```
+### Enumerate ACLs for specific object ("Domain Admins" and "Enterprise Admins")
+```powershell
+Get-DomainObjectAcl -identity "Domain Admins","Enterprise Admins" | ForEach-Object {
+    $_ | Add-Member NoteProperty 'IdentityName' $(Convert-SidToName $_.SecurityIdentifier) -Force
+    $_ | Add-Member NoteProperty 'SIDName' $(if ($_.ObjectSID) { Convert-SidToName $_.ObjectSID } else { "NULL" }) -Force
+    $_
+}
+```
+- This is how we read below output: `Authenticated Users` have `GenericRead` permission on `LAB\Enterprise Admins`.
+```
+ObjectDN              : CN=Enterprise Admins,CN=Users,DC=lab,DC=local
+ObjectSID             : S-1-5-21-154859305-3651822756-1843101964-519
+ActiveDirectoryRights : GenericRead
+IdentityName          : Authenticated Users
+SIDName               : LAB\Enterprise Admins
+BinaryLength          : 20
+AceQualifier          : AccessAllowed
+IsCallback            : False
+OpaqueLength          : 0
+AccessMask            : 131220
+SecurityIdentifier    : S-1-5-11
+AceType               : AccessAllowed
+AceFlags              : None
+IsInherited           : False
+InheritanceFlags      : None
+PropagationFlags      : None
+AuditFlags            : None
+```
+
+
 ### Find ACLs where a user named Bob has GenericAll, GenericRead, GenericWrite, WriteOwner or WriteDacl permissions
 ```powershell
 Get-DomainObjectAcl -ResolveGUIDs | ForEach-Object {
@@ -94,7 +124,7 @@ Get-DomainObjectAcl -ResolveGUIDs | ForEach-Object {
     # Add ObjectName (converted from ObjectSID) only if ObjectSID is not null
     if ($_.ObjectSID -ne $null) {
         try {
-            $ObjectName = Convert-SidToName $_.ObjectSID
+            $ObjectName = Convert-SidToName $_.ObjectSID -Force
         } catch {
             $ObjectName = "Unknown"
         }
@@ -111,7 +141,15 @@ Get-DomainObjectAcl -ResolveGUIDs | ForEach-Object {
         $_.ActiveDirectoryRights -match 'WriteOwner' -or
         $_.ActiveDirectoryRights -match 'WriteDacl'
     )
-} | Select-Object IdentityName, ActiveDirectoryRights, ObjectName
+} | Select-Object SecurityIdentifier, IdentityName, ActiveDirectoryRights, ObjectName, ObjectSID
+```
+- This is how we read below output: `LAB\bob` have `ExtendedRight, GenericRead` permission on `S-1-5-21-154859305-3651822756-1843101964-1157` SID with `Unknown` name.
+```
+SecurityIdentifier    : S-1-5-21-154859305-3651822756-1843101964-1107
+IdentityName          : LAB\bob
+ActiveDirectoryRights : ExtendedRight, GenericRead
+ObjectName            : Unknown
+ObjectSID             : S-1-5-21-154859305-3651822756-1843101964-1157
 ```
 
 ### Check for the specific object attribute and properties
