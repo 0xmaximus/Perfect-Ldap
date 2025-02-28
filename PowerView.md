@@ -78,14 +78,14 @@ Get-DomainComputer | Select-Object dnshostname
 Get-NetLocalGroupMember -Computer DESKTOP-S95DUHA -GroupName Administrators
 ```
 
-### Enumerate ACLs in domain
+### Enumerate ACLs in domain (All to All)
 ```powershell
 Get-DomainObjectACl # find all ACLs
 Find-InterestingDomainAcl # find interesting ACLs and convert SID to distinguished name automatic
 Get-DomainObjectACl -identity "Domain Admins" # find ACLs for "Domain Admins" object
 Convert-SidToName -SID S-1-5-21-154859305-3651822756-1843101964-512 # Convert SID to name
 ```
-### Enumerate ACLs for specific object ("Domain Admins" and "Enterprise Admins")
+### Enumerate ACLs for specific object ("Domain Admins" and "Enterprise Admins") (All to one)
 ```powershell
 Get-DomainObjectAcl -identity "Domain Admins","Enterprise Admins" | ForEach-Object {
     $_ | Add-Member NoteProperty 'IdentityName' $(Convert-SidToName $_.SecurityIdentifier) -Force
@@ -101,7 +101,7 @@ Authenticated Users                GenericRead 		LAB\Domain Admins
 ```
 
 
-### Find ACLs where a user named Bob has GenericAll, GenericRead, GenericWrite, WriteOwner or WriteDacl permissions
+### Find ACLs where a user named Bob has GenericAll, GenericRead, GenericWrite, WriteOwner or WriteDacl permissions (One to All)
 - Method1: (Duplicate)
 ```powershell
 Get-DomainObjectAcl -ResolveGUIDs | ForEach-Object {
@@ -160,8 +160,6 @@ Get-DomainObjectAcl -ResolveGUIDs | ForEach-Object {
 } | Select-Object SecurityIdentifier, IdentityName, ActiveDirectoryRights, ObjectName, ObjectSID
 ```
 
-
-
 - This is how we read below output: `LAB\bob` have `ExtendedRight, GenericRead` permission on `S-1-5-21-154859305-3651822756-1843101964-1157` SID with `Unknown` name.
 ```
 SecurityIdentifier    : S-1-5-21-154859305-3651822756-1843101964-1107
@@ -170,6 +168,15 @@ ActiveDirectoryRights : ExtendedRight, GenericRead
 ObjectName            : Unknown
 ObjectSID             : S-1-5-21-154859305-3651822756-1843101964-1157
 ```
+### Find ACLs where a user named Bob has GenericAll, GenericRead, GenericWrite, WriteOwner or WriteDacl permissions (One to one)
+```powershell
+Get-DomainObjectAcl -Identity "Domain Admins","Enterprise Admins" | ForEach-Object {
+    $_ | Add-Member NoteProperty 'IdentityName' $(Convert-SidToName $_.SecurityIdentifier); $_
+} | Where-Object {
+    ($_.IdentityName -match 'Authenticated Users') -or ($_.IdentityName -match 'Domain Users')
+}
+```
+
 
 ### Check for the specific object attribute and properties
 ```powershell
