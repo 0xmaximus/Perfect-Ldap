@@ -200,37 +200,37 @@ Get-ADObject 'CN=ms-Mcs-AdmPwd,CN=Schema,CN=Configuration,DC=lab,DC=local'
 Get-DomainComputer DESKTOP-S95DUHA -Properties ms-mcs-AdmPwd,ComputerName,ms-mcs-AdmPwdExpirationTime
 ```
 
-### get all users with passwords changed > 1 year ago, returning sam account names and password last set times
+### Get all users with passwords changed > 1 year ago, returning sam account names and password last set times
 ```powershell
 $Date = (Get-Date).AddYears(-1).ToFileTime()
-Get-DomainUser -LDAPFilter "(pwdlastset<=$Date)" -Properties samaccountname,pwdlastset
+Get-DomainUser -UACFilter NOT_ACCOUNTDISABLE -LDAPFilter "(pwdlastset<=$Date)" -Properties samaccountname,pwdlastset
 ```
 
-### all enabled users, returning distinguishednames
+### All enabled users
 ```powershell
-Get-DomainUser -LDAPFilter "(!userAccountControl:1.2.840.113556.1.4.803:=2)" -Properties distinguishedname
-Get-DomainUser -UACFilter NOT_ACCOUNTDISABLE -Properties distinguishedname
+Get-DomainUser -LDAPFilter "(!userAccountControl:1.2.840.113556.1.4.803:=2)" -Properties samaccountname
+Get-DomainUser -UACFilter NOT_ACCOUNTDISABLE -Properties samaccountname
 ```
 
-### all disabled users
+### All disabled users
 ```powershell
 Get-DomainUser -LDAPFilter "(userAccountControl:1.2.840.113556.1.4.803:=2)" | select name
 Get-DomainUser -UACFilter ACCOUNTDISABLE | select name
 ```
 
-### find all users with an SPN set (likely service accounts)
+### Find all users with an SPN set (likely service accounts)
 ```powershell
 Get-DomainUser -SPN
 Get-DomainUser -SPN | select samaccountname,serviceprincipalname
 Get-DomainComputer | select samaccountname,serviceprincipalname
 ```
 
-### find all service accounts in "Domain Admins"
+### Find all service accounts in "Domain Admins"
 ```powershell
 Get-DomainUser -SPN | ?{$_.memberof -match 'Domain Admins'}
 ```
 
-### return the local groups of a remote server
+### Return the local groups of a remote server
 ```powershell
 Get-NetLocalGroup SERVER.domain.local
 ```
@@ -252,7 +252,7 @@ Find-DomainShare -CheckShareAccess
 ### Finds all LAPS-enabled machines
 ```powershell
 Get-DomainComputer -LDAPFilter '(ms-Mcs-AdmPwdExpirationtime=*)'
-Get-DomainComputer -LDAPFilter '(ms-Mcs-AdmPwdExpirationtime=*)' | select cn
+Get-DomainComputer -LDAPFilter '(ms-Mcs-AdmPwdExpirationtime=*)' | select samaccountname
 ```
 
 ### Enumerates all users/groups who can view LAPS password on specified LAPSCLIENT.test.local machine
