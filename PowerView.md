@@ -93,11 +93,11 @@ Get-DomainObjectAcl -identity "Domain Admins","Enterprise Admins" | ForEach-Obje
     $_
 } | select IdentityName,ActiveDirectoryRights,SIDName -unique
 ```
-- This is how we read below output: `Authenticated Users` have `GenericRead` permission on `LAB\Enterprise Admins`.
+- This is how we read below output: `Authenticated Users` have `GenericRead` permission on `LAB\Domain Admins`.
 ```
 IdentityName                       ActiveDirectoryRights SIDName
 ------------                       --------------------- -------
-Authenticated Users                GenericRead LAB\Domain Admins
+Authenticated Users                GenericRead 		LAB\Domain Admins
 ```
 
 
