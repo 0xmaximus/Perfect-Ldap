@@ -116,6 +116,7 @@ AuditFlags            : None
 
 
 ### Find ACLs where a user named Bob has GenericAll, GenericRead, GenericWrite, WriteOwner or WriteDacl permissions
+- Method1: (Duplicate)
 ```powershell
 Get-DomainObjectAcl -ResolveGUIDs | ForEach-Object {
     # Always add IdentityName (converted from SecurityIdentifier)
@@ -143,6 +144,38 @@ Get-DomainObjectAcl -ResolveGUIDs | ForEach-Object {
     )
 } | Select-Object SecurityIdentifier, IdentityName, ActiveDirectoryRights, ObjectName, ObjectSID
 ```
+- Method2: (Remove Duplicate)
+```powershell
+Get-DomainObjectAcl -ResolveGUIDs | ForEach-Object {
+    $_ | Add-Member -Force NoteProperty 'IdentityName' $(Convert-SidToName $_.SecurityIdentifier)
+    $ObjectName = "N/A"  
+    if ($_.ObjectSID -ne $null -and $_.ObjectSID -ne "") {
+        try {
+            $ResolvedName = Convert-SidToName -SID $_.ObjectSID -ErrorAction Stop
+            if ($ResolvedName) {
+                $ObjectName = $ResolvedName
+            } else {
+                $ObjectName = "Unknown"
+            }
+        } catch {
+            $ObjectName = "Unknown"
+        }
+    }
+    $_ | Add-Member -Force NoteProperty 'ObjectName' $ObjectName
+    $_  
+} | Where-Object {
+    $_.IdentityName -match 'bob' -and (
+        $_.ActiveDirectoryRights -match 'GenericAll' -or
+        $_.ActiveDirectoryRights -match 'GenericRead' -or
+        $_.ActiveDirectoryRights -match 'GenericWrite' -or
+        $_.ActiveDirectoryRights -match 'WriteOwner' -or
+        $_.ActiveDirectoryRights -match 'WriteDacl'
+    )
+} | Select-Object SecurityIdentifier, IdentityName, ActiveDirectoryRights, ObjectName, ObjectSID
+```
+
+
+
 - This is how we read below output: `LAB\bob` have `ExtendedRight, GenericRead` permission on `S-1-5-21-154859305-3651822756-1843101964-1157` SID with `Unknown` name.
 ```
 SecurityIdentifier    : S-1-5-21-154859305-3651822756-1843101964-1107
