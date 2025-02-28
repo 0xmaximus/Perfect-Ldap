@@ -91,27 +91,13 @@ Get-DomainObjectAcl -identity "Domain Admins","Enterprise Admins" | ForEach-Obje
     $_ | Add-Member NoteProperty 'IdentityName' $(Convert-SidToName $_.SecurityIdentifier) -Force
     $_ | Add-Member NoteProperty 'SIDName' $(if ($_.ObjectSID) { Convert-SidToName $_.ObjectSID } else { "NULL" }) -Force
     $_
-}
+} | select IdentityName,ActiveDirectoryRights,SIDName -unique
 ```
 - This is how we read below output: `Authenticated Users` have `GenericRead` permission on `LAB\Enterprise Admins`.
 ```
-ObjectDN              : CN=Enterprise Admins,CN=Users,DC=lab,DC=local
-ObjectSID             : S-1-5-21-154859305-3651822756-1843101964-519
-ActiveDirectoryRights : GenericRead
-IdentityName          : Authenticated Users
-SIDName               : LAB\Enterprise Admins
-BinaryLength          : 20
-AceQualifier          : AccessAllowed
-IsCallback            : False
-OpaqueLength          : 0
-AccessMask            : 131220
-SecurityIdentifier    : S-1-5-11
-AceType               : AccessAllowed
-AceFlags              : None
-IsInherited           : False
-InheritanceFlags      : None
-PropagationFlags      : None
-AuditFlags            : None
+IdentityName                       ActiveDirectoryRights SIDName
+------------                       --------------------- -------
+Authenticated Users                GenericRead LAB\Domain Admins
 ```
 
 
