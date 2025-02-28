@@ -102,7 +102,12 @@ Authenticated Users                GenericRead 		LAB\Domain Admins
 
 
 ### Find ACLs where a user named Bob has GenericAll, GenericRead, GenericWrite, WriteOwner or WriteDacl permissions (One to All)
-- Method1: (Duplicate)
+- Method1: (Simple)
+```powershell
+Get-DomainObjectAcl -ResolveGUIDS | ForEach-Object {$_ | Add-Member NoteProperty 'IdentityName' $(Convert-SidToName $_.SecurityIdentifier);$_} | ?{$_.IdentityName -match 'Administrator'}
+```
+
+- Method2: (Duplicate)
 ```powershell
 Get-DomainObjectAcl -ResolveGUIDs | ForEach-Object {
     # Always add IdentityName (converted from SecurityIdentifier)
@@ -130,7 +135,7 @@ Get-DomainObjectAcl -ResolveGUIDs | ForEach-Object {
     )
 } | Select-Object SecurityIdentifier, IdentityName, ActiveDirectoryRights, ObjectName, ObjectSID
 ```
-- Method2: (Remove Duplicate)
+- Method3: (Remove Duplicate)
 ```powershell
 Get-DomainObjectAcl -ResolveGUIDs | ForEach-Object {
     $_ | Add-Member -Force NoteProperty 'IdentityName' $(Convert-SidToName $_.SecurityIdentifier)
