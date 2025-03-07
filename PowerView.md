@@ -288,9 +288,9 @@ Get-DomainGPO -ComputerIdentity pc1 -Properties DisplayName | sort -Property Dis
 
 ### Identifying computers that are configured for Unconstrained Delegation
 ```powershell
-Get-ADComputer -Filter {TrustedForDelegation -eq $true -and primarygroupid -eq 515} -Properties trustedfordelegation,serviceprincipalname,description
+Get-DomainComputer -Unconstrained -Properties useraccountcontrol,dnshostnamem,serviceprincipalname,samaccountname | fl
 
-Get-ADComputer -LDAPFilter "(userAccountControl:1.2.840.113556.1.4.803:=524288)"
+Get-DomainComputer -ldapfilter "(userAccountControl:1.2.840.113556.1.4.803:=524288)" | select samaccountname
 ```
 ### Identifying users that are configured for Unconstrained Delegation
 ```powershell
