@@ -309,6 +309,6 @@ Get-DomainComputer -SPN | select samaccountname,serviceprincipalname
 Get-DomainUser -SPN | select samaccountname,serviceprincipalname
 ```
 ### Find computer accounts being created by non-admin users
-```
+```powershell
 Get-ADComputer -Properties ms-ds-CreatorSid -Filter {ms-ds-creatorsid -ne "$Null"} | select DNSHostName,SamAccountName,Enabled
 ```
