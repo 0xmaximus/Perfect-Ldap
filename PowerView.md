@@ -3,9 +3,7 @@
 - Run Following commands:
 ```cmd
 runas /netonly /user:lab.local\user 'powershell -ep bypass'
-
 Import-Module PowerView.ps1
-
 Get-NetDomain
 ```
 
@@ -54,9 +52,7 @@ Get-DomainOU | ? { $_.ou -like "*laps*" } # Enumerate OU's that have "LAPS" in t
 ### Return all Group Policy Objects:
 ```powershell
 Get-DomainGPO -Properties DisplayName | sort -Property DisplayName
-
 Get-DomainGPO | ? { $_.DisplayName -like "*laps*" } | select DisplayName, Name, GPCFileSysPath | fl # Enumerate domain GPOs that have "LAPS" in the name
-
 Get-DomainGPO | ? { $_.DisplayName -like "*password solution*" } | select DisplayName, Name, GPCFileSysPath | fl # Enumerate domain GPOs that have "LAPS" in the name
 ```
 ### Enumerate all GPOs that are applied to a particular machine
@@ -272,7 +268,6 @@ Get-DomainOU | Get-DomainObjectAcl -ResolveGUIDs | Where-Object {($_.ObjectAceTy
 ### Read instances of ms-mcs-admpwd where it is not empty
 ```powershell
 Get-DomainComputer | Select-Object 'dnshostname','ms-mcs-admpwd' | Where-Object {$_."ms-mcs-admpwd" -ne $null}
-
 ([adsisearcher]"(&(objectCategory=computer)(ms-MCS-AdmPwd=*)(sAMAccountName=*))").findAll() | ForEach-Object { Write-Host "" ; $_.properties.cn ; $_.properties.'ms-mcs-admpwd'}   # native method
 ```
 
@@ -289,9 +284,7 @@ Get-DomainGPO -ComputerIdentity pc1 -Properties DisplayName | sort -Property Dis
 ### Identifying users that are configured for Unconstrained Delegation
 ```powershell
 Get-DomainComputer -Unconstrained -Properties samaccountname,useraccountcontrol,serviceprincipalname | fl
-
 Get-DomainComputer -ldapfilter "(userAccountControl:1.2.840.113556.1.4.803:=524288)" | select samaccountname,useraccountcontrol,serviceprincipalname
-
 Get-DomainUser -ldapfilter "(userAccountControl:1.2.840.113556.1.4.803:=524288)" | select samaccountname,useraccountcontrol,serviceprincipalname
 ```
 ### Identifying users that are configured for Constrained Delegation
@@ -299,12 +292,22 @@ Get-DomainUser -ldapfilter "(userAccountControl:1.2.840.113556.1.4.803:=524288)"
 Get-DomainUser -TrustedToAuth | select samaccountname,useraccountcontrol,msds-allowedtodelegateto
 Get-DomainComputer -TrustedToAuth | select samaccountname,useraccountcontrol,msds-allowedtodelegateto
 ```
+### Identifying users that are configured for RBCD
+```powershell
+Get-DomainComputer | Where-Object { $_.'msDS-AllowedToActOnBehalfOfOtherIdentity' -ne $null } | select samaccountname,serviceprincipalname,msds-allowedtodelegateto
+Get-DomainUser | Where-Object { $_.'msDS-AllowedToActOnBehalfOfOtherIdentity' -ne $null } | select samaccountname,serviceprincipalname,msds-allowedtodelegateto
+```
 
 ### Find roastable accounts (AS-REP Roasting Attack)
 ```powershell
+Get-DomainComputer -PreauthNotRequired -Properties samaccountname,memberof
 Get-DomainUser -PreauthNotRequired -Properties samaccountname,memberof
 ```
-
+### Find kerberoastable accounts (Kerberoasting Attack)
+```powershell
+Get-DomainComputer -SPN | select samaccountname,serviceprincipalname
+Get-DomainUser -SPN | select samaccountname,serviceprincipalname
+```
 ### Find computer accounts being created by non-admin users
 ```
 Get-ADComputer -Properties ms-ds-CreatorSid -Filter {ms-ds-creatorsid -ne "$Null"} | select DNSHostName,SamAccountName,Enabled
