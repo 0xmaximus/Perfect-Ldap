@@ -312,3 +312,7 @@ Get-DomainUser -SPN | select samaccountname,serviceprincipalname
 ```powershell
 Get-ADComputer -Properties ms-ds-CreatorSid -Filter {ms-ds-creatorsid -ne "$Null"} | select DNSHostName,SamAccountName,Enabled
 ```
+
+‍‍‍```powershell
+Get-ADDomain | Select-Object -ExpandProperty DistinguishedName | Get-ADObject -Properties 'ms-DS-MachineAccountQuota'
+```
