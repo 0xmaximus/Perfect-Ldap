@@ -286,20 +286,26 @@ Get-DomainGPOUserLocalGroupMapping -LocalGroup Administrators | select ObjectNam
 Get-DomainGPO -ComputerIdentity pc1 -Properties DisplayName | sort -Property DisplayName
 ```
 
-### Identifying computers that are configured for Unconstrained Delegation
-```powershell
-Get-DomainComputer -Unconstrained -Properties useraccountcontrol,dnshostnamem,serviceprincipalname,samaccountname | fl
-
-Get-DomainComputer -ldapfilter "(userAccountControl:1.2.840.113556.1.4.803:=524288)" | select samaccountname
-```
 ### Identifying users that are configured for Unconstrained Delegation
 ```powershell
-Get-DomainUser | Where-Object { ($_."userAccountControl" -band 0x80000) -ne 0 } | select samaccountname,serviceprincipalname
+Get-DomainComputer -Unconstrained -Properties samaccountname,useraccountcontrol,serviceprincipalname | fl
 
-Get-DomainUser -ldapfilter "(userAccountControl:1.2.840.113556.1.4.803:=524288)"
+Get-DomainComputer -ldapfilter "(userAccountControl:1.2.840.113556.1.4.803:=524288)" | select samaccountname,useraccountcontrol,serviceprincipalname
+
+Get-DomainUser -ldapfilter "(userAccountControl:1.2.840.113556.1.4.803:=524288)" | select samaccountname,useraccountcontrol,serviceprincipalname
+```
+### Identifying users that are configured for Constrained Delegation
+```powershell
+Get-DomainUser -TrustedToAuth | select samaccountname,useraccountcontrol,msds-allowedtodelegateto
+Get-DomainComputer -TrustedToAuth | select samaccountname,useraccountcontrol,msds-allowedtodelegateto
 ```
 
 ### Find roastable accounts (AS-REP Roasting Attack)
 ```powershell
 Get-DomainUser -PreauthNotRequired -Properties samaccountname,memberof
+```
+
+### Find computer accounts being created by non-admin users
+```
+Get-ADComputer -Properties ms-ds-CreatorSid -Filter {ms-ds-creatorsid -ne "$Null"} | select DNSHostName,SamAccountName,Enabled
 ```
