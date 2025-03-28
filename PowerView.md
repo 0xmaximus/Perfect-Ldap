@@ -304,7 +304,7 @@ Get-DomainUser -PreauthNotRequired -Properties samaccountname,memberof
 ```
 ### Find kerberoastable accounts (Kerberoasting Attack)
 ```powershell
-Get-DomainComputer -SPN | select samaccountname,serviceprincipalname
+Get-DomainComputer | Where-Object { $_.serviceprincipalname } | Select-Object samaccountname,serviceprincipalname
 Get-DomainUser -SPN | select samaccountname,serviceprincipalname
 ```
 ### Find computer accounts being created by non-admin users
