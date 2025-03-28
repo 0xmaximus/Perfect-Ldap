@@ -314,4 +314,5 @@ Get-ADComputer -Properties ms-ds-CreatorSid -Filter {ms-ds-creatorsid -ne "$Null
 ### Enumerate MachineAccountQuota setting for the domain
 ```powershell
 Get-ADDomain | Select-Object -ExpandProperty DistinguishedName | Get-ADObject -Properties 'ms-DS-MachineAccountQuota'
+Get-DomainObject -Identity "dc=domain,dc=com" -Domain DOMAIN.COM -DomainController DC-IP | select ms-ds-machineaccountquota
 ```
