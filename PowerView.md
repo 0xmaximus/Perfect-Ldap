@@ -297,7 +297,6 @@ Get-DomainComputer -TrustedToAuth | select samaccountname,useraccountcontrol,msd
 Get-DomainComputer | Where-Object { $_.'msDS-AllowedToActOnBehalfOfOtherIdentity' -ne $null } | select samaccountname,serviceprincipalname,msds-allowedtodelegateto
 Get-DomainUser | Where-Object { $_.'msDS-AllowedToActOnBehalfOfOtherIdentity' -ne $null } | select samaccountname,serviceprincipalname,msds-allowedtodelegateto
 ```
-
 ### Find roastable accounts (AS-REP Roasting Attack)
 ```powershell
 Get-DomainComputer -PreauthNotRequired -Properties samaccountname,memberof
@@ -313,6 +312,6 @@ Get-DomainUser -SPN | select samaccountname,serviceprincipalname
 Get-ADComputer -Properties ms-ds-CreatorSid -Filter {ms-ds-creatorsid -ne "$Null"} | select DNSHostName,SamAccountName,Enabled
 ```
 ### Enumerate MachineAccountQuota setting for the domain
-‍‍‍```powershell
+```powershell
 Get-ADDomain | Select-Object -ExpandProperty DistinguishedName | Get-ADObject -Properties 'ms-DS-MachineAccountQuota'
 ```
