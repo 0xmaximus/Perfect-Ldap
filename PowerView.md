@@ -316,3 +316,17 @@ Get-ADComputer -Properties ms-ds-CreatorSid -Filter {ms-ds-creatorsid -ne "$Null
 Get-ADDomain | Select-Object -ExpandProperty DistinguishedName | Get-ADObject -Properties 'ms-DS-MachineAccountQuota'
 Get-DomainObject -Identity "dc=domain,dc=com" -Domain DOMAIN.COM -DomainController DC-IP | select ms-ds-machineaccountquota
 ```
+
+### List users with `msDS-ResultantPSO` set
+```powershell
+Get-ADUser -Filter * -Properties msDS-ResultantPSO | Where-Object { $_."msDS-ResultantPSO" -ne $null } | Select-Object SamAccountName, msDS-ResultantPSO
+
+Get-DomainUser -Properties samaccountname, msDS-ResultantPSO | Where-Object {$_."msDS-ResultantPSO" -ne $null}
+```
+
+### List users without fine-grained password policy (with default password policy)
+```powershell
+Get-ADUser -Filter * -Properties msDS-ResultantPSO | Where-Object -Property msDS-ResultantPSO -EQ $null | Where-Object -Property useraccountcontrol -NotMatch "ACCOUNTDISABLE" | Select-Object samaccountname
+
+Get-DomainUser -Properties samaccountname, msDS-ResultantPSO | Where-Object -Property msDS-ResultantPSO -EQ $null | Where-Object -Property useraccountcontrol -NotMatch "ACCOUNTDISABLE" | Select-Object samaccountname
+```
