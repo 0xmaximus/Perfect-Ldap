@@ -330,3 +330,20 @@ Get-ADUser -Filter * -Properties msDS-ResultantPSO | Where-Object -Property msDS
 
 Get-DomainUser -Properties samaccountname, msDS-ResultantPSO | Where-Object -Property msDS-ResultantPSO -EQ $null | Where-Object -Property useraccountcontrol -NotMatch "ACCOUNTDISABLE" | Select-Object samaccountname
 ```
+
+### Enumerate enable user accounts with password not required
+```powershell
+Get-ADUser -Filter {PasswordNotRequired -eq $true -and Enabled -eq $true}
+
+Get-ADuser -LDAPFilter "(userAccountControl:1.2.840.113556.1.4.803:=32)(!(userAccountControl:1.2.840.113556.1.4.803:=2))"
+
+Get-DomainUser -Filter "(userAccountControl:1.2.840.113556.1.4.803:=32)(!(userAccountControl:1.2.840.113556.1.4.803:=2))"
+```
+
+### Check both user and computer accounts with password not required
+```powershell
+Get-ADObject -LDAPFilter "(&(objectClass=*)(userAccountControl:1.2.840.113556.1.4.803:=32)(!(userAccountControl:1.2.840.113556.1.4.803:=2)))" -Properties SamAccountName, userAccountControl
+
+Get-DomainObject -Filter "(userAccountControl:1.2.840.113556.1.4.803:=32)(!(userAccountControl:1.2.840.113556.1.4.803:=2))" | select samaccountname
+
+```
