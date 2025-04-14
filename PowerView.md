@@ -7,6 +7,12 @@ Import-Module PowerView.ps1
 Get-NetDomain
 ```
 
+```cmd
+Run as admin:
+Unblock-File -Path "C:\Microsoft.ActiveDirectory.Management.dll"
+Import-Module Microsoft.ActiveDirectory.Management.dll
+```
+
 ### Enumerate current user's domain
 ```powershell
 Get-NetDomain
@@ -184,16 +190,6 @@ Get-DomainObjectAcl -Identity "Domain Admins","Enterprise Admins" | ForEach-Obje
 Get-ADObject 'CN=aryan,CN=Users,DC=lab,DC=local'
 ```
 
-### Discovering LAPS with check for the LAPS password attribute ms-mcs-admpwd in Active Directory
-```powershell
-Get-ADObject 'CN=ms-Mcs-AdmPwd,CN=Schema,CN=Configuration,DC=lab,DC=local'
-```
-
-### Discovering LAPS with check for the LAPS password attribute ms-mcs-admpwd in specific computer
-```powershell
-Get-DomainComputer DESKTOP-S95DUHA -Properties ms-mcs-AdmPwd,ComputerName,ms-mcs-AdmPwdExpirationTime
-```
-
 ### Get all users with passwords changed > 1 year ago, returning sam account names and password last set times
 ```powershell
 $Date = (Get-Date).AddYears(-1).ToFileTime()
@@ -247,6 +243,11 @@ Find-DomainShare -CheckShareAccess
 ```powershell
 Get-DomainComputer -LDAPFilter '(ms-Mcs-AdmPwdExpirationtime=*)'
 Get-DomainComputer -LDAPFilter '(ms-Mcs-AdmPwdExpirationtime=*)' | select samaccountname
+```
+
+### Check for the LAPS password attribute ms-mcs-admpwd in specific computer
+```powershell
+Get-DomainComputer PC1 -Properties ms-mcs-AdmPwd,ComputerName,ms-mcs-AdmPwdExpirationTime
 ```
 
 ### Enumerates all users/groups who can view LAPS password on specified LAPSCLIENT.test.local machine
