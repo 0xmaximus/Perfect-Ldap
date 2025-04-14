@@ -252,16 +252,19 @@ Get-DomainComputer PC1 -Properties ms-mcs-AdmPwd,ComputerName,ms-mcs-AdmPwdExpir
 
 ### Enumerates all users/groups who can view LAPS password on specified LAPSCLIENT.test.local machine
 ```powershell
-Get-DomainComputer LAPSCLIENT.test.local | 
-	Select-Object -ExpandProperty distinguishedname | 
-	ForEach-Object { $_.substring($_.indexof('OU')) } | ForEach-Object { 
-		Get-DomainObjectAcl -ResolveGUIDs $_.ObjectDN 
-	} | Where-Object { 
-		($_.ObjectAceType -like 'ms-Mcs-AdmPwd') -and 
-		($_.ActiveDirectoryRights -match 'ReadProperty')
-	} | Select-Object -ExpandProperty SecurityIdentifier | Get-DomainObject | select samaccountname
+$computer = Get-DomainComputer pc1.lab.local
+$dn = $computer.distinguishedname
+
+# Trim to the OU or container
+$ou = $dn.Substring($dn.IndexOf('OU='))
+
+# Get ACLs for the OU
+Get-DomainObjectAcl -ResolveGUIDs -Identity $ou | Where-Object {
+    $_.ObjectAceType -eq 'ms-Mcs-AdmPwd' -and
+    $_.ActiveDirectoryRights -match 'ReadProperty'
+} | Select-Object -ExpandProperty SecurityIdentifier | Get-DomainObject | Select-Object samaccountname
 ```
-### Enumerate Principals that can read the 'ms-Mcs-AdmPwd' (Same as 21)
+### Enumerate Principals that can read the 'ms-Mcs-AdmPwd'
 ```powershell
 Get-DomainOU | Get-DomainObjectAcl -ResolveGUIDs | Where-Object {($_.ObjectAceType -like 'ms-Mcs-AdmPwd') -and ($_.ActiveDirectoryRights -match 'ReadProperty')} | ForEach-Object { $_ | Add-Member NoteProperty 'IdentityName' $(Convert-SidToName $_.SecurityIdentifier); $_ } | select IdentityName
 ```
@@ -269,6 +272,7 @@ Get-DomainOU | Get-DomainObjectAcl -ResolveGUIDs | Where-Object {($_.ObjectAceTy
 ### Read instances of ms-mcs-admpwd where it is not empty
 ```powershell
 Get-DomainComputer | Select-Object 'dnshostname','ms-mcs-admpwd' | Where-Object {$_."ms-mcs-admpwd" -ne $null}
+
 ([adsisearcher]"(&(objectCategory=computer)(ms-MCS-AdmPwd=*)(sAMAccountName=*))").findAll() | ForEach-Object { Write-Host "" ; $_.properties.cn ; $_.properties.'ms-mcs-admpwd'}   # native method
 ```
 
