@@ -12,6 +12,12 @@ Run as admin:
 Unblock-File -Path "C:\Microsoft.ActiveDirectory.Management.dll"
 Import-Module Microsoft.ActiveDirectory.Management.dll
 ```
+Help:
+```cmd
+userAccountControl:1.2.840.113556.1.4.803:=2 # Disable Account
+userAccountControl:1.2.840.113556.1.4.803:=32 # Not Required Password
+userAccountControl:1.2.840.113556.1.4.803:=65536 # Password Never Expire 
+```
 
 ### Enumerate current user's domain
 ```powershell
@@ -269,7 +275,7 @@ Get-DomainObjectAcl -ResolveGUIDs -Identity $ou | Where-Object {
 Get-DomainOU | Get-DomainObjectAcl -ResolveGUIDs | Where-Object {($_.ObjectAceType -like 'ms-Mcs-AdmPwd') -and ($_.ActiveDirectoryRights -match 'ReadProperty')} | ForEach-Object { $_ | Add-Member NoteProperty 'IdentityName' $(Convert-SidToName $_.SecurityIdentifier); $_ } | select IdentityName
 ```
 
-### Read instances of ms-mcs-admpwd where it is not empty
+### Read instances of ms-mcs-admpwd where it is not empty (Gold)
 ```powershell
 Get-DomainComputer | Select-Object 'dnshostname','ms-mcs-admpwd' | Where-Object {$_."ms-mcs-admpwd" -ne $null}
 
@@ -350,5 +356,4 @@ Get-DomainUser -Filter "(userAccountControl:1.2.840.113556.1.4.803:=32)(!(userAc
 Get-ADObject -LDAPFilter "(&(objectClass=*)(userAccountControl:1.2.840.113556.1.4.803:=32)(!(userAccountControl:1.2.840.113556.1.4.803:=2)))" -Properties SamAccountName, userAccountControl
 
 Get-DomainObject -Filter "(userAccountControl:1.2.840.113556.1.4.803:=32)(!(userAccountControl:1.2.840.113556.1.4.803:=2))" | select samaccountname
-
 ```
