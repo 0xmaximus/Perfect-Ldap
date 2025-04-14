@@ -363,6 +363,44 @@ Get-ADDomain | Select-Object -ExpandProperty DistinguishedName | Get-ADObject -P
 
 Get-DomainObject -Identity "dc=domain,dc=com" -Domain DOMAIN.COM -DomainController DC-IP | select ms-ds-machineaccountquota
 ```
+### Enumerate "Add workstations to domain" setting for the domain (SeMachineAccountPrivilege)
+```powershell
+Get-DomainGPO -ComputerIdentity DC1 | Select-Object displayname, gpcfilesyspath | ForEach-Object {
+    $gpoName = $_.displayname
+    $sysvolPath = $_.gpcfilesyspath + "\MACHINE\Microsoft\Windows NT\SecEdit\GptTmpl.inf"
+    Write-Output "Checking GPO: $gpoName"
+    if (Test-Path $sysvolPath) {
+        $content = Get-Content $sysvolPath | Select-String "SeMachineAccountPrivilege"
+        if ($content) {
+            Write-Output "Found: $content"
+            $sids = $content.ToString().Split("=")[1].Trim().Split(",")
+            foreach ($sid in $sids) {
+                $sid = $sid.Trim() -replace '^\*', ''
+                if ($sid -like "S-1-*") {
+                    $name = ConvertFrom-SID -ObjectSid $sid 2>$null
+                    if ($name) {
+                        Write-Output "SID: $sid -> Name: $name"
+                    } else {
+                        $obj = Get-DomainObject -Identity $sid 2>$null
+                        $name = $obj.samAccountName
+                        if ($name) {
+                            Write-Output "SID: $sid -> Name: $name"
+                        } else {
+                            Write-Output "SID: $sid -> Unknown"
+                        }
+                    }
+                }
+            }
+        } else {
+            Write-Output "No Add workstations to domain setting found"
+        }
+    } else {
+        Write-Output "GptTmpl.inf not found"
+    }
+    Write-Output "-----"
+}
+
+```
 
 ### List users with `msDS-ResultantPSO` set
 ```powershell
