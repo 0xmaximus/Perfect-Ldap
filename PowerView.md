@@ -395,6 +395,6 @@ Get-DomainObject -Filter "(userAccountControl:1.2.840.113556.1.4.803:=32)(!(user
 ```
 
 ### Check both enable user and computer accounts with with password never expired
-```
+```powershell
 Get-DomainObject -Filter "(userAccountControl:1.2.840.113556.1.4.803:=65536)(!(userAccountControl:1.2.840.113556.1.4.803:=2))" | select samaccountname
 ```
