@@ -208,7 +208,6 @@ Get-DomainObjectAcl -Identity "Domain Admins","Enterprise Admins" | ForEach-Obje
 }
 ```
 
-
 ### Check for the specific object attribute and properties
 ```powershell
 Get-ADObject 'CN=aryan,CN=Users,DC=lab,DC=local'
@@ -322,11 +321,6 @@ Get-DomainComputer | Select-Object 'dnshostname','ms-mcs-admpwd' | Where-Object 
 Get-DomainGPOUserLocalGroupMapping -LocalGroup Administrators | select ObjectName, GPODisplayName, ContainerName, ComputerName
 ```
 
-### Identify the LAPS Account Username
-```powershell
-Get-DomainGPO -ComputerIdentity pc1 -Properties DisplayName | sort -Property DisplayName
-```
-
 ### Identifying users that are configured for Unconstrained Delegation
 ```powershell
 Get-DomainComputer -Unconstrained -Properties samaccountname,useraccountcontrol,serviceprincipalname | fl
@@ -393,9 +387,14 @@ Get-ADuser -LDAPFilter "(userAccountControl:1.2.840.113556.1.4.803:=32)(!(userAc
 Get-DomainUser -Filter "(userAccountControl:1.2.840.113556.1.4.803:=32)(!(userAccountControl:1.2.840.113556.1.4.803:=2))"
 ```
 
-### Check both user and computer accounts with password not required
+### Check both enable user and computer accounts with password not required
 ```powershell
 Get-ADObject -LDAPFilter "(&(objectClass=*)(userAccountControl:1.2.840.113556.1.4.803:=32)(!(userAccountControl:1.2.840.113556.1.4.803:=2)))" -Properties SamAccountName, userAccountControl
 
 Get-DomainObject -Filter "(userAccountControl:1.2.840.113556.1.4.803:=32)(!(userAccountControl:1.2.840.113556.1.4.803:=2))" | select samaccountname
+```
+
+### Check both enable user and computer accounts with with password never expired
+```
+Get-DomainObject -Filter "(userAccountControl:1.2.840.113556.1.4.803:=65536)(!(userAccountControl:1.2.840.113556.1.4.803:=2))" | select samaccountname
 ```
