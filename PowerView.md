@@ -42,29 +42,38 @@ Get-DomainUser -Identity username
 ### Find Groups for a Specific User
 ```powershell  
 Get-DomainGroup -MemberIdentity username
+
 Get-DomainGroup -MemberIdentity username | select samaccountname
 ```
 
 ### Enumerate domain admin and enterprise admin accounts:
 ```powershell
 Get-DomainGroup
+
 Get-DomainGroupMember -Identity "Domain Admins"
+
 Get-DomainGroupMember -Identity "Domain Admins" | select MemberName
+
 Get-DomainGroupMember -Identity "Enterprise Admins"
+
 Get-DomainGroupMember -Identity "Enterprise Admins" -Recurse
+
 Get-DomainGroupMember -Identity "Enterprise Admins" -Server lab.local # if there is a child DC and we are in that.
 ```
 
 ### Enumerate domain OUs:
 ```powershell
 Get-DomainOU
+
 Get-DomainOU | ? { $_.ou -like "*laps*" } # Enumerate OU's that have "LAPS" in the name
 ```
 
 ### Return all Group Policy Objects:
 ```powershell
 Get-DomainGPO -Properties DisplayName | sort -Property DisplayName
+
 Get-DomainGPO | ? { $_.DisplayName -like "*laps*" } | select DisplayName, Name, GPCFileSysPath | fl # Enumerate domain GPOs that have "LAPS" in the name
+
 Get-DomainGPO | ? { $_.DisplayName -like "*password solution*" } | select DisplayName, Name, GPCFileSysPath | fl # Enumerate domain GPOs that have "LAPS" in the name
 ```
 ### Enumerate all GPOs that are applied to a particular machine
@@ -82,15 +91,17 @@ Get-DomainComputer -SearchBase $ouDN | Select-Object Name, OperatingSystem, IPv4
 ```
 ### Enumerate local admins on a computer
 ```powershell
-Get-DomainComputer | Select-Object dnshostname
 Get-NetLocalGroupMember -Computer DESKTOP-S95DUHA -GroupName Administrators
 ```
 
 ### Enumerate ACLs in domain (All to All)
 ```powershell
 Get-DomainObjectACl # find all ACLs
+
 Find-InterestingDomainAcl # find interesting ACLs and convert SID to distinguished name automatic
+
 Get-DomainObjectACl -identity "Domain Admins" # find ACLs for "Domain Admins" object
+
 Convert-SidToName -SID S-1-5-21-154859305-3651822756-1843101964-512 # Convert SID to name
 ```
 ### Enumerate ACLs for specific object ("Domain Admins" and "Enterprise Admins") (All to one)
@@ -205,19 +216,23 @@ Get-DomainUser -UACFilter NOT_ACCOUNTDISABLE -LDAPFilter "(pwdlastset<=$Date)" -
 ### All enabled users
 ```powershell
 Get-DomainUser -LDAPFilter "(!userAccountControl:1.2.840.113556.1.4.803:=2)" -Properties samaccountname
+
 Get-DomainUser -UACFilter NOT_ACCOUNTDISABLE -Properties samaccountname
 ```
 
 ### All disabled users
 ```powershell
 Get-DomainUser -LDAPFilter "(userAccountControl:1.2.840.113556.1.4.803:=2)" | select name
+
 Get-DomainUser -UACFilter ACCOUNTDISABLE | select name
 ```
 
 ### Find all users with an SPN set (likely service accounts)
 ```powershell
 Get-DomainUser -SPN
+
 Get-DomainUser -SPN | select samaccountname,serviceprincipalname
+
 Get-DomainComputer | select samaccountname,serviceprincipalname
 ```
 
@@ -236,7 +251,9 @@ Get-NetLocalGroup SERVER.domain.local
 ### Finds domain machines where those users are logged in (default domain admin)
 ```powershell
 Find-DomainUserLocation
+
 Find-DomainUserLocation -ComputerName DESKTOP-S95DUHA
+
 Find-DomainUserLocation | select UserName, SessionFromName
 ```
 
@@ -248,6 +265,7 @@ Find-DomainShare -CheckShareAccess
 ### Finds all LAPS-enabled machines
 ```powershell
 Get-DomainComputer -LDAPFilter '(ms-Mcs-AdmPwdExpirationtime=*)'
+
 Get-DomainComputer -LDAPFilter '(ms-Mcs-AdmPwdExpirationtime=*)' | select samaccountname
 ```
 
@@ -295,27 +313,33 @@ Get-DomainGPO -ComputerIdentity pc1 -Properties DisplayName | sort -Property Dis
 ### Identifying users that are configured for Unconstrained Delegation
 ```powershell
 Get-DomainComputer -Unconstrained -Properties samaccountname,useraccountcontrol,serviceprincipalname | fl
+
 Get-DomainComputer -ldapfilter "(userAccountControl:1.2.840.113556.1.4.803:=524288)" | select samaccountname,useraccountcontrol,serviceprincipalname
+
 Get-DomainUser -ldapfilter "(userAccountControl:1.2.840.113556.1.4.803:=524288)" | select samaccountname,useraccountcontrol,serviceprincipalname
 ```
 ### Identifying users that are configured for Constrained Delegation
 ```powershell
 Get-DomainUser -TrustedToAuth | select samaccountname,useraccountcontrol,msds-allowedtodelegateto
+
 Get-DomainComputer -TrustedToAuth | select samaccountname,useraccountcontrol,msds-allowedtodelegateto
 ```
 ### Identifying users that are configured for RBCD
 ```powershell
 Get-DomainComputer | Where-Object { $_.'msDS-AllowedToActOnBehalfOfOtherIdentity' -ne $null } | select samaccountname,serviceprincipalname,msds-allowedtodelegateto
+
 Get-DomainUser | Where-Object { $_.'msDS-AllowedToActOnBehalfOfOtherIdentity' -ne $null } | select samaccountname,serviceprincipalname,msds-allowedtodelegateto
 ```
 ### Find roastable accounts (AS-REP Roasting Attack)
 ```powershell
 Get-DomainComputer -PreauthNotRequired -Properties samaccountname,memberof
+
 Get-DomainUser -PreauthNotRequired -Properties samaccountname,memberof
 ```
 ### Find kerberoastable accounts (Kerberoasting Attack)
 ```powershell
 Get-DomainComputer | Where-Object { $_.serviceprincipalname } | Select-Object samaccountname,serviceprincipalname
+
 Get-DomainUser -SPN | select samaccountname,serviceprincipalname
 ```
 ### Find computer accounts being created by non-admin users
@@ -325,6 +349,7 @@ Get-ADComputer -Properties ms-ds-CreatorSid -Filter {ms-ds-creatorsid -ne "$Null
 ### Enumerate MachineAccountQuota setting for the domain
 ```powershell
 Get-ADDomain | Select-Object -ExpandProperty DistinguishedName | Get-ADObject -Properties 'ms-DS-MachineAccountQuota'
+
 Get-DomainObject -Identity "dc=domain,dc=com" -Domain DOMAIN.COM -DomainController DC-IP | select ms-ds-machineaccountquota
 ```
 
