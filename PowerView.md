@@ -3,19 +3,24 @@
 - Run Following commands:
 ```cmd
 runas /netonly /user:lab.local\user 'powershell -ep bypass'
+
 Import-Module PowerView.ps1
+
 Get-NetDomain
 ```
 
 ```cmd
 Run as admin:
 Unblock-File -Path "C:\Microsoft.ActiveDirectory.Management.dll"
+
 Import-Module Microsoft.ActiveDirectory.Management.dll
 ```
 Help:
 ```cmd
 userAccountControl:1.2.840.113556.1.4.803:=2 # Disable Account
+
 userAccountControl:1.2.840.113556.1.4.803:=32 # Not Required Password
+
 userAccountControl:1.2.840.113556.1.4.803:=65536 # Password Never Expire 
 ```
 
@@ -84,7 +89,9 @@ Get-DomainGPO -ComputerIdentity pc1 -Properties DisplayName | sort -Property Dis
 ### Enumerate Computers in OU
 ```powershell
 Get-DomainOU | Select-Object Name, DistinguishedName # find domain OUs
+
 Get-DomainGPO | Select-Object gplink # find domain GPOs
+
 $ouDN = (Get-DomainOU -Identity "Domain Controllers").DistinguishedName
 Write-host $ouDN
 Get-DomainComputer -SearchBase $ouDN | Select-Object Name, OperatingSystem, IPv4Address
