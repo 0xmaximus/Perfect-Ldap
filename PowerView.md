@@ -297,7 +297,17 @@ Get-DomainObjectAcl -ResolveGUIDs -Identity $ou | Where-Object {
 ```
 ### Enumerate Principals that can read the 'ms-Mcs-AdmPwd'
 ```powershell
-Get-DomainOU | Get-DomainObjectAcl -ResolveGUIDs | Where-Object {($_.ObjectAceType -like 'ms-Mcs-AdmPwd') -and ($_.ActiveDirectoryRights -match 'ReadProperty')} | ForEach-Object { $_ | Add-Member NoteProperty 'IdentityName' $(Convert-SidToName $_.SecurityIdentifier); $_ } | select IdentityName
+Get-DomainOU | ForEach-Object {
+    $ou = $_.DistinguishedName
+    Get-DomainObjectAcl -Identity $ou -ResolveGUIDs | ForEach-Object {
+        $_ | Add-Member -NotePropertyName OU -NotePropertyValue $ou -Force
+        $_
+    }
+} | Where-Object {
+    $_.ObjectAceType -eq 'ms-Mcs-AdmPwd' -and
+    $_.ActiveDirectoryRights -match 'ReadProperty'
+} | Select-Object SecurityIdentifier, ActiveDirectoryRights, OU
+
 ```
 
 ### Read instances of ms-mcs-admpwd where it is not empty (Gold)
