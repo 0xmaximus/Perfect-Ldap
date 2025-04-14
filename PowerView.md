@@ -275,6 +275,11 @@ Get-DomainComputer -LDAPFilter '(ms-Mcs-AdmPwdExpirationtime=*)'
 Get-DomainComputer -LDAPFilter '(ms-Mcs-AdmPwdExpirationtime=*)' | select samaccountname
 ```
 
+### Finds all LAPS-disabled machines
+```powershell
+Get-DomainComputer -LDAPFilter '(!(ms-Mcs-AdmPwdExpirationtime=*))' | select samaccountname
+```
+
 ### Check for the LAPS password attribute ms-mcs-admpwd in specific computer
 ```powershell
 Get-DomainComputer PC1 -Properties ms-mcs-AdmPwd,ComputerName,ms-mcs-AdmPwdExpirationTime
