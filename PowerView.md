@@ -469,3 +469,12 @@ if ($user.useraccountcontrol -band 2) {
     Write-Output "User is enabled"
 }
 ```
+### Check the computer is enable or not
+```powershell
+$computer = Get-DomainComputer -Identity "computername"
+if ($computer.useraccountcontrol -band 2) {
+    Write-Output "Computer is disabled"
+} else {
+    Write-Output "Computer is enabled"
+}
+```
