@@ -21,7 +21,11 @@ userAccountControl:1.2.840.113556.1.4.803:=2 # Disable Account
 
 userAccountControl:1.2.840.113556.1.4.803:=32 # Not Required Password
 
-userAccountControl:1.2.840.113556.1.4.803:=65536 # Password Never Expire 
+userAccountControl:1.2.840.113556.1.4.803:=65536 # Password Never Expire
+
+userAccountControl:1.2.840.113556.1.4.803:=4194304 # Users have the "Do not require Kerberos preauthentication" enabled
+
+samAccountType=805306368 # Only Active Directory users (not computers, groups, etc.)
 ```
 
 ### Enumerate current user's domain
@@ -440,4 +444,12 @@ Get-DomainObject -Filter "(userAccountControl:1.2.840.113556.1.4.803:=32)(!(user
 ### Check both enable user and computer accounts with with password never expired
 ```powershell
 Get-DomainObject -Filter "(userAccountControl:1.2.840.113556.1.4.803:=65536)(!(userAccountControl:1.2.840.113556.1.4.803:=2))" | select samaccountname
+```
+
+### Find user accounts without Kerberos pre-authentication
+
+```powershell
+Get-DomainUser -PreauthNotRequired | select samaccountname
+
+Get-DomainObject -Filter "(&(samAccountType=805306368)(userAccountControl:1.2.840.113556.1.4.803:=4194304))" | select samaccountname
 ```
