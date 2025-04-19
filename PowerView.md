@@ -460,3 +460,12 @@ Get-DomainUser -PreauthNotRequired | select samaccountname
 
 Get-DomainObject -Filter "(&(samAccountType=805306368)(userAccountControl:1.2.840.113556.1.4.803:=4194304))" | select samaccountname
 ```
+### Check the user is enable or not
+```powershell
+$user = Get-DomainUser -Identity "username"
+if ($user.useraccountcontrol -band 2) {
+    Write-Output "User is disabled"
+} else {
+    Write-Output "User is enabled"
+}
+```
