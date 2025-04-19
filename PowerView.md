@@ -283,7 +283,7 @@ Get-DomainComputer -LDAPFilter '(ms-Mcs-AdmPwdExpirationtime=*)' | select samacc
 ```powershell
 Get-DomainComputer -LDAPFilter '(!(ms-Mcs-AdmPwdExpirationtime=*))' | select samaccountname
 
-Get-DomainComputer -LDAPFilter '(&(!(ms-Mcs-AdmPwdExpirationtime=*))(userAccountControl:1.2.840.113556.1.4.803:=4096))' | select samaccountname
+Get-DomainComputer -LDAPFilter '(&(!ms-Mcs-AdmPwdExpirationTime=*)(!(userAccountControl:1.2.840.113556.1.4.803:=2)))' | Select-Object samaccountname
 ```
 
 ### Check for the LAPS password attribute ms-mcs-admpwd in specific computer
