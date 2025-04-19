@@ -432,8 +432,10 @@ Get-DomainUser -Properties samaccountname, msDS-ResultantPSO | Where-Object -Pro
 Get-ADUser -Filter {PasswordNotRequired -eq $true -and Enabled -eq $true}
 
 Get-ADuser -LDAPFilter "(userAccountControl:1.2.840.113556.1.4.803:=32)(!(userAccountControl:1.2.840.113556.1.4.803:=2))"
+Get-ADUser -LDAPFilter '(&(userAccountControl:1.2.840.113556.1.4.803:=32)(!(userAccountControl:1.2.840.113556.1.4.803:=2)))'
 
 Get-DomainUser -Filter "(userAccountControl:1.2.840.113556.1.4.803:=32)(!(userAccountControl:1.2.840.113556.1.4.803:=2))"
+Get-DomainUser -LDAPFilter '(&(userAccountControl:1.2.840.113556.1.4.803:=32)(!(userAccountControl:1.2.840.113556.1.4.803:=2)))'
 ```
 
 ### Check both enable user and computer accounts with password not required
@@ -441,11 +443,14 @@ Get-DomainUser -Filter "(userAccountControl:1.2.840.113556.1.4.803:=32)(!(userAc
 Get-ADObject -LDAPFilter "(&(objectClass=*)(userAccountControl:1.2.840.113556.1.4.803:=32)(!(userAccountControl:1.2.840.113556.1.4.803:=2)))" -Properties SamAccountName, userAccountControl
 
 Get-DomainObject -Filter "(userAccountControl:1.2.840.113556.1.4.803:=32)(!(userAccountControl:1.2.840.113556.1.4.803:=2))" | select samaccountname
+Get-DomainObject -LDAPFilter '(&(userAccountControl:1.2.840.113556.1.4.803:=32)(!(userAccountControl:1.2.840.113556.1.4.803:=2)))' | select samaccountname
 ```
 
 ### Check both enable user and computer accounts with with password never expired
 ```powershell
 Get-DomainObject -Filter "(userAccountControl:1.2.840.113556.1.4.803:=65536)(!(userAccountControl:1.2.840.113556.1.4.803:=2))" | select samaccountname
+Get-DomainObject -LDAPFilter '(&(userAccountControl:1.2.840.113556.1.4.803:=65536)(!(userAccountControl:1.2.840.113556.1.4.803:=2)))' | select samaccountname
+
 ```
 
 ### Find user accounts without Kerberos pre-authentication
