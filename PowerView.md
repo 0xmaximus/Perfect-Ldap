@@ -100,9 +100,32 @@ $ouDN = (Get-DomainOU -Identity "Domain Controllers").DistinguishedName
 Write-host $ouDN
 Get-DomainComputer -SearchBase $ouDN | Select-Object Name, OperatingSystem, IPv4Address
 ```
+
+### Return the local groups of a remote server
+```powershell
+Get-NetLocalGroup SERVER.domain.local
+```
+
+
 ### Enumerate local admins on a computer
 ```powershell
 Get-NetLocalGroupMember -Computer DESKTOP-S95DUHA -GroupName Administrators
+```
+
+### Finds domain machines where specific users are logged into.
+
+### Retrieves Group Policy Objects (GPOs) that add users or groups to the local Administrators group on domain-joined computers.
+```powershell
+Get-DomainGPOUserLocalGroupMapping -LocalGroup Administrators | select ObjectName, GPODisplayName, ContainerName, ComputerName
+```
+
+### Finds domain machines where those users are logged in (default domain admin)
+```powershell
+Find-DomainUserLocation
+
+Find-DomainUserLocation -ComputerName DESKTOP-S95DUHA
+
+Find-DomainUserLocation | select UserName, SessionFromName
 ```
 
 ### Enumerate ACLs in domain (All to All)
@@ -251,22 +274,6 @@ Get-DomainComputer | select samaccountname,serviceprincipalname
 Get-DomainUser -SPN | ?{$_.memberof -match 'Domain Admins'}
 ```
 
-### Return the local groups of a remote server
-```powershell
-Get-NetLocalGroup SERVER.domain.local
-```
-
-### Finds domain machines where specific users are logged into.
-
-### Finds domain machines where those users are logged in (default domain admin)
-```powershell
-Find-DomainUserLocation
-
-Find-DomainUserLocation -ComputerName DESKTOP-S95DUHA
-
-Find-DomainUserLocation | select UserName, SessionFromName
-```
-
 ### Find SMB shares in a domain and -CheckShareAccess will only display those that the executing principal has access to.
 ```powershell
 Find-DomainShare -CheckShareAccess
@@ -305,6 +312,7 @@ Get-DomainObjectAcl -ResolveGUIDs -Identity $ou | Where-Object {
     $_.ActiveDirectoryRights -match 'ReadProperty'
 } | Select-Object -ExpandProperty SecurityIdentifier | Get-DomainObject | Select-Object samaccountname
 ```
+
 ### Enumerate Principals that can read the 'ms-Mcs-AdmPwd'
 ```powershell
 Get-DomainOU | ForEach-Object {
@@ -327,11 +335,6 @@ Get-DomainComputer | Select-Object 'dnshostname','ms-mcs-admpwd' | Where-Object 
 ([adsisearcher]"(&(objectCategory=computer)(ms-MCS-AdmPwd=*)(sAMAccountName=*))").findAll() | ForEach-Object { Write-Host "" ; $_.properties.cn ; $_.properties.'ms-mcs-admpwd'}   # native method
 ```
 
-### Retrieves Group Policy Objects (GPOs) that add users or groups to the local Administrators group on domain-joined computers.
-```powershell
-Get-DomainGPOUserLocalGroupMapping -LocalGroup Administrators | select ObjectName, GPODisplayName, ContainerName, ComputerName
-```
-
 ### Identifying users that are configured for Unconstrained Delegation
 ```powershell
 Get-DomainComputer -Unconstrained -Properties samaccountname,useraccountcontrol,serviceprincipalname | fl
@@ -342,9 +345,9 @@ Get-DomainUser -ldapfilter "(userAccountControl:1.2.840.113556.1.4.803:=524288)"
 ```
 ### Identifying users that are configured for Constrained Delegation
 ```powershell
-Get-DomainUser -TrustedToAuth | select samaccountname,useraccountcontrol,msds-allowedtodelegateto
-
 Get-DomainComputer -TrustedToAuth | select samaccountname,useraccountcontrol,msds-allowedtodelegateto
+
+Get-DomainUser -TrustedToAuth | select samaccountname,useraccountcontrol,msds-allowedtodelegateto
 ```
 ### Identifying users that are configured for RBCD
 ```powershell
@@ -354,9 +357,9 @@ Get-DomainUser | Where-Object { $_.'msDS-AllowedToActOnBehalfOfOtherIdentity' -n
 ```
 ### Find roastable accounts (AS-REP Roasting Attack)
 ```powershell
-Get-DomainComputer -PreauthNotRequired -Properties samaccountname,memberof
+Get-DomainUser -PreauthNotRequired -Properties samaccountname
 
-Get-DomainUser -PreauthNotRequired -Properties samaccountname,memberof
+Get-DomainObject -Filter "(&(samAccountType=805306368)(userAccountControl:1.2.840.113556.1.4.803:=4194304))" | select samaccountname
 ```
 ### Find kerberoastable accounts (Kerberoasting Attack)
 ```powershell
@@ -368,12 +371,14 @@ Get-DomainUser -SPN | select samaccountname,serviceprincipalname
 ```powershell
 Get-ADComputer -Properties ms-ds-CreatorSid -Filter {ms-ds-creatorsid -ne "$Null"} | select DNSHostName,SamAccountName,Enabled
 ```
+
 ### Enumerate MachineAccountQuota setting for the domain
 ```powershell
 Get-ADDomain | Select-Object -ExpandProperty DistinguishedName | Get-ADObject -Properties 'ms-DS-MachineAccountQuota'
 
 Get-DomainObject -Identity "dc=domain,dc=com" -Domain DOMAIN.COM -DomainController DC-IP | select ms-ds-machineaccountquota
 ```
+
 ### Enumerate "Add workstations to domain" setting for the domain (SeMachineAccountPrivilege)
 ```powershell
 Get-DomainGPO -ComputerIdentity DC1 | Select-Object displayname, gpcfilesyspath | ForEach-Object {
@@ -431,10 +436,8 @@ Get-DomainUser -Properties samaccountname, msDS-ResultantPSO | Where-Object -Pro
 ```powershell
 Get-ADUser -Filter {PasswordNotRequired -eq $true -and Enabled -eq $true}
 
-Get-ADuser -LDAPFilter "(userAccountControl:1.2.840.113556.1.4.803:=32)(!(userAccountControl:1.2.840.113556.1.4.803:=2))"
 Get-ADUser -LDAPFilter '(&(userAccountControl:1.2.840.113556.1.4.803:=32)(!(userAccountControl:1.2.840.113556.1.4.803:=2)))'
 
-Get-DomainUser -Filter "(userAccountControl:1.2.840.113556.1.4.803:=32)(!(userAccountControl:1.2.840.113556.1.4.803:=2))"
 Get-DomainUser -LDAPFilter '(&(userAccountControl:1.2.840.113556.1.4.803:=32)(!(userAccountControl:1.2.840.113556.1.4.803:=2)))'
 ```
 
@@ -442,24 +445,14 @@ Get-DomainUser -LDAPFilter '(&(userAccountControl:1.2.840.113556.1.4.803:=32)(!(
 ```powershell
 Get-ADObject -LDAPFilter "(&(objectClass=*)(userAccountControl:1.2.840.113556.1.4.803:=32)(!(userAccountControl:1.2.840.113556.1.4.803:=2)))" -Properties SamAccountName, userAccountControl
 
-Get-DomainObject -Filter "(userAccountControl:1.2.840.113556.1.4.803:=32)(!(userAccountControl:1.2.840.113556.1.4.803:=2))" | select samaccountname
 Get-DomainObject -LDAPFilter '(&(userAccountControl:1.2.840.113556.1.4.803:=32)(!(userAccountControl:1.2.840.113556.1.4.803:=2)))' | select samaccountname
 ```
 
 ### Check both enable user and computer accounts with with password never expired
 ```powershell
-Get-DomainObject -Filter "(userAccountControl:1.2.840.113556.1.4.803:=65536)(!(userAccountControl:1.2.840.113556.1.4.803:=2))" | select samaccountname
 Get-DomainObject -LDAPFilter '(&(userAccountControl:1.2.840.113556.1.4.803:=65536)(!(userAccountControl:1.2.840.113556.1.4.803:=2)))' | select samaccountname
-
 ```
 
-### Find user accounts without Kerberos pre-authentication
-
-```powershell
-Get-DomainUser -PreauthNotRequired | select samaccountname
-
-Get-DomainObject -Filter "(&(samAccountType=805306368)(userAccountControl:1.2.840.113556.1.4.803:=4194304))" | select samaccountname
-```
 ### Check the user is enable or not
 ```powershell
 $user = Get-DomainUser -Identity "username"
@@ -469,6 +462,7 @@ if ($user.useraccountcontrol -band 2) {
     Write-Output "User is enabled"
 }
 ```
+
 ### Check the computer is enable or not
 ```powershell
 $computer = Get-DomainComputer -Identity "computername"
