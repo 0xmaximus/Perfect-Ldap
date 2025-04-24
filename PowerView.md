@@ -481,3 +481,8 @@ Get-DomainObject -LDAPFilter "(&(objectClass=msDS-GroupManagedServiceAccount))" 
 ```powershell
 Get-DomainObject -LDAPFilter "(&(objectClass=msDS-ManagedServiceAccount))" | Select samaccountname
 ```
+
+### List all gMSA and MSA users
+```powershell
+Get-ADServiceAccount -Filter * | Select-Object SamAccountName, ObjectClass
+```
