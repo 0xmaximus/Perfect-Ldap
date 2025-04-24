@@ -472,3 +472,12 @@ if ($computer.useraccountcontrol -band 2) {
     Write-Output "Computer is enabled"
 }
 ```
+### Find Group Managed Service Account (gMSA)
+```powershell
+Get-DomainObject -LDAPFilter "(&(objectClass=msDS-GroupManagedServiceAccount))" | Select samaccountname
+```
+
+### Find Managed Service Account (MSA)
+```powershell
+Get-DomainObject -LDAPFilter "(&(objectClass=msDS-ManagedServiceAccount))" | Select samaccountname
+```
