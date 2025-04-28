@@ -11,6 +11,7 @@ Get-NetDomain
 
 ```cmd
 Run as admin:
+
 Unblock-File -Path "C:\Microsoft.ActiveDirectory.Management.dll"
 
 Import-Module Microsoft.ActiveDirectory.Management.dll
@@ -46,6 +47,8 @@ Get-DomainComputer
 ### Enumerate a user property like logoncount, badpasswordtime and ...
 ```powershell
 Get-DomainUser -Identity username
+
+Get-DomainUser krbtgt | select samaccountname,pwdlastset
 ```
 
 ### Find Groups for a Specific User
