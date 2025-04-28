@@ -71,6 +71,10 @@ Get-DomainGroupMember -Identity "Enterprise Admins"
 Get-DomainGroupMember -Identity "Enterprise Admins" -Recurse
 
 Get-DomainGroupMember -Identity "Enterprise Admins" -Server lab.local # if there is a child DC and we are in that.
+
+Get-DomainGroupMember -Identity "Protected Users" | select MemberName
+
+"Domain Admins","Enterprise Admins" | ForEach-Object { Get-DomainGroupMember -Identity $_ } | Select MemberName
 ```
 
 ### Enumerate domain OUs:
