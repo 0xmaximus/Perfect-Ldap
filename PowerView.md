@@ -49,6 +49,8 @@ Get-DomainComputer
 Get-DomainUser -Identity username
 
 Get-DomainUser krbtgt | select samaccountname,pwdlastset
+
+Get-DomainUser -admincount | select samaccountname # Find AdminSDHolder
 ```
 
 ### Find Groups for a Specific User
