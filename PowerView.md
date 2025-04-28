@@ -44,6 +44,19 @@ Get-DomainController
 Get-DomainComputer
 ```
 
+### Enumerate computers with IPv4 address
+‍‍‍```powershell
+Get-ADComputer -Filter * -Properties dNSHostName | ForEach-Object {
+    if ($_.dNSHostName) {
+        $ip = (Resolve-DnsName $_.dNSHostName -ErrorAction SilentlyContinue | Where-Object { $_.Type -eq "A" }).IPAddress
+        [PSCustomObject]@{
+            ComputerName = $_.Name
+            IPv4Address = $ip
+        }
+    }
+}
+```
+
 ### Enumerate a user property like logoncount, badpasswordtime and ...
 ```powershell
 Get-DomainUser -Identity username
