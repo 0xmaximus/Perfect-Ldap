@@ -45,7 +45,7 @@ Get-DomainComputer
 ```
 
 ### Enumerate computers with IPv4 address
-‍‍‍```powershell
+```powershell
 Get-ADComputer -Filter * -Properties dNSHostName | ForEach-Object {
     if ($_.dNSHostName) {
         $ip = (Resolve-DnsName $_.dNSHostName -ErrorAction SilentlyContinue | Where-Object { $_.Type -eq "A" }).IPAddress
