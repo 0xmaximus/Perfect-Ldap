@@ -123,7 +123,7 @@ Write-host $ouDN
 Get-DomainComputer -SearchBase $ouDN | Select-Object Name, OperatingSystem, IPv4Address
 ```
 
-### Return the local groups of a remote server
+### Return the local groups of a remote server (need local admin)
 ```powershell
 Get-NetLocalGroup SERVER.domain.local
 ```
